@@ -8,6 +8,8 @@ TagManager:
   - String
   - Arrow
   - Orb
+  - Tree
+  - Floor
   layers:
   - Default
   - TransparentFX
@@ -18,10 +20,10 @@ TagManager:
   - 
   - 
   - Orb
-  - 
-  - 
-  - 
-  - 
+  - Floor
+  - Arrow
+  - Player
+  - Untouchable
   - 
   - 
   - 

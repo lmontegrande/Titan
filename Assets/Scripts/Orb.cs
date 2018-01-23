@@ -2,24 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Orb : MonoBehaviour {
+public class Orb : MonoBehaviour, IHittable{
 
-    public enum OrbState {rotating, firing}
+    public enum OrbState {rotating, firing, dead}
 
     public GameObject rotateTarget;
+    public Material rotatingMaterial;
+    public Material firingMaterial;
+    public Material deadMaterial;
+    public AudioClip collisionAudioClip;
     public float rotateSpeed = 1f;
     public float fireSpeed = 5f;
     public float originPullSpeed = 1f;
-    public Material rotatingMaterial;
-    public Material firingMaterial;
-    public AudioClip collisionAudioClip;
+    public OrbState orbState;
 
     private Rigidbody _rigidbody;
     private MeshRenderer _meshRenderer;
     private AudioSource _audioSource;
     private GameObject player;
     private Vector3 moveTarget;
-    public OrbState orbState;
+    private bool isGrounded;
 
     public void Awake()
     {
@@ -36,6 +38,9 @@ public class Orb : MonoBehaviour {
 
     public void Update()
     {
+        if (orbState == OrbState.dead)
+            return;
+
         UpdateVariables();
 
         if (orbState == OrbState.rotating)
@@ -46,14 +51,48 @@ public class Orb : MonoBehaviour {
 
     public void OnCollisionEnter(Collision collision)
     {
-        GetHit();
+        switch(collision.gameObject.tag)
+        {
+            case "Tree":
+                Destroy(collision.gameObject);
+                GetHit();
+                break;
+            case "Player":
+                collision.gameObject.GetComponent<ArcherPlayer>().GetHit();
+                GetHit();
+                break;
+            case "Floor":
+                if (!isGrounded)
+                {
+                    iTween.ShakePosition(GameObject.Find("Arena"), new Vector3(1f, 1f, 1f), .1f);
+                    _audioSource.PlayOneShot(collisionAudioClip);
+                    _rigidbody.velocity = Vector3.zero;
+                    isGrounded = true;
+                }
+                break;
+        }
+    }
+
+    public void Die()
+    {
+        orbState = OrbState.dead;
+        _rigidbody.useGravity = true;
+        _rigidbody.velocity = Vector3.zero;
+        _meshRenderer.material = deadMaterial;
+        gameObject.layer = SortingLayer.GetLayerValueFromName("Ground");
+        _audioSource.Stop();
     }
 
     public void GetHit()
     {
+        if (orbState == OrbState.dead)
+            return;
+
         _audioSource.PlayOneShot(collisionAudioClip);
         _rigidbody.velocity = Vector3.zero;
         orbState = OrbState.rotating;
+
+        iTween.ShakePosition(GameObject.Find("Arena"), new Vector3(1f, 1f, 1f), .1f);
     }
 
     private void UpdateVariables()
