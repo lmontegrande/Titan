@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class OrbTitan : MonoBehaviour {
 
@@ -42,6 +43,14 @@ public class OrbTitan : MonoBehaviour {
             {
                 orb.GetComponent<Orb>().Die();
             }
+
+            StartCoroutine(DelayedLoadScene());
         }
+    }
+
+    private IEnumerator DelayedLoadScene()
+    {
+        yield return new WaitForSeconds(10f);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

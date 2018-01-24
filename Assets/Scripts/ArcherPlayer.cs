@@ -10,7 +10,8 @@ public class ArcherPlayer : MonoBehaviour {
     public void GetHit()
     {
         GetHit(1);
-        StartCoroutine(ScreenFlash());
+        if (screenFlashImage != null)
+            StartCoroutine(ScreenFlash());
     }
 
     public void GetHit(int damage)
